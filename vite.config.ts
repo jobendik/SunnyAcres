@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import { fileURLToPath, URL } from 'node:url';
 
 // GitHub Pages publishes the site at https://<user>.github.io/<repo>/, so the
-// asset base must match the repository name. Override with VITE_BASE for forks.
-const repoBase = process.env.VITE_BASE ?? '/sunnyacres/';
+// asset base must match the repository name (case-sensitive). Override with VITE_BASE for forks.
+const repoBase = process.env.VITE_BASE ?? '/SunnyAcres/';
 
 export default defineConfig({
   base: repoBase,
