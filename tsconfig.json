@@ -28,10 +28,6 @@
     "noImplicitReturns": false,
     "exactOptionalPropertyTypes": false,
 
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
   },
   "include": ["src"]
 }
