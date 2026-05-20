@@ -31,6 +31,17 @@ import { tickStall } from './systems/market-stall';
 import { tickBoat } from './systems/boat';
 import { tickTrain } from './systems/train';
 import { maybeRolloverGazette } from './systems/gazette';
+import { tickBalloon } from './systems/balloon';
+import { maybeRolloverCart } from './systems/festival-cart';
+import { tickClub, maybeRolloverClub } from './systems/club';
+import { regenerateEnergy, maybeDailyEnergyBonus } from './systems/expeditions';
+import { tickContest, maybeRolloverContest } from './systems/contest';
+import { tickLiveEvent } from './systems/live-events';
+import { tickVisitorsV2 } from './systems/visitors-v2';
+import { tickHelpers } from './systems/helpers';
+import { tickContracts } from './systems/contracts';
+import { refreshForecast } from './systems/forecast';
+import { checkMilestones as checkJournalMilestones } from './systems/journal';
 
 let smokeT = 0;
 
@@ -110,11 +121,17 @@ export function update(dt: number): void {
   const prevDay = state.day;
   state.day = 1 + Math.floor(elapsed / DAY_SECONDS);
 
-  // Day-over-day side effects (market refresh, deferred payouts, gazette).
+  // Day-over-day side effects (market refresh, deferred payouts, gazette, weekly cart/contest/club).
   if (state.day !== prevDay) {
     refreshMarketModifiers();
     tickDeferredPayouts();
     maybeRolloverGazette();
+    maybeRolloverCart();
+    maybeRolloverContest();
+    maybeRolloverClub();
+    maybeDailyEnergyBonus();
+    refreshForecast();
+    checkJournalMilestones();
   }
 
   updateWeatherAndSeason();
@@ -221,6 +238,33 @@ export function update(dt: number): void {
     state._trainTick = 0;
     tickTrain();
   }
+  // Balloon & visitors — every 10s.
+  state._balloonTick = (state._balloonTick ?? 0) + dt;
+  if (state._balloonTick > 10) {
+    state._balloonTick = 0;
+    tickBalloon();
+    regenerateEnergy();
+  }
+  state._visitorTick = (state._visitorTick ?? 0) + dt;
+  if (state._visitorTick > 12) {
+    state._visitorTick = 0;
+    tickVisitorsV2();
+    tickContest();
+  }
+  // Contracts & live events — every 15s.
+  state._contractsTick = (state._contractsTick ?? 0) + dt;
+  if (state._contractsTick > 15) {
+    state._contractsTick = 0;
+    tickContracts();
+  }
+  state._liveEventTick = (state._liveEventTick ?? 0) + dt;
+  if (state._liveEventTick > 20) {
+    state._liveEventTick = 0;
+    tickLiveEvent();
+  }
+  // Club + helpers (lightweight, per-frame).
+  tickClub(dt);
+  tickHelpers(dt);
 
   // Autosave
   state._saveTick = (state._saveTick ?? 0) + dt;

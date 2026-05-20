@@ -598,7 +598,292 @@ export type MaterialKey =
   | 'plank' | 'nail' | 'screw' | 'hinge' | 'paint'   // barn materials
   | 'panel' | 'bolt' | 'rope' | 'tarp'                // silo materials
   | 'deed' | 'stake' | 'map' | 'mallet'              // expansion materials
+  | 'axe' | 'saw' | 'shovel' | 'pickaxe' | 'lantern' // clearing/expedition tools
+  | 'fragment' | 'token' | 'compost'                 // misc rewards
   ;
+
+// ---- Phase 4 expansion: Balloon & Festival Cart ----
+
+export interface BalloonRequest {
+  itemKey: string;
+  qty: number;
+}
+export interface BalloonRoot {
+  active: boolean;
+  leavesAt: number;       // seconds (game time)
+  nextAt: number;
+  requests: BalloonRequest[];
+  rewardCoins: number;
+  rewardMaterial?: string;
+  rewardFragments: number;
+}
+
+export interface FestivalCartRoot {
+  unlocked: boolean;
+  themeId: string;        // e.g. 'baking', 'orchard', 'ranching', 'fishing', 'craft'
+  weekIndex: number;
+  requests: BalloonRequest[];
+  delivered: Record<string, number>;
+  points: number;
+  pointGoal: number;
+  rewardClaimed: boolean;
+  endsAt: number;
+}
+
+// ---- Phase 5: Land Expansion & Obstacles ----
+
+export type PlotStatus = 'locked' | 'unlockable' | 'clearing' | 'unlocked';
+export type ObstacleKind = 'bush' | 'log' | 'rock' | 'mud' | 'bramble' | 'stump';
+
+export interface PlotObstacle {
+  id: string;
+  kind: ObstacleKind;
+  cleared: boolean;
+}
+
+export interface PlotState {
+  id: string;
+  status: PlotStatus;
+  unlockLevel: number;
+  obstacles: PlotObstacle[];
+}
+
+export interface ExpansionRoot {
+  plots: Record<string, PlotState>;
+}
+
+// ---- Phase 9: Farming Club ----
+
+export interface ClubMember {
+  id: string;
+  name: string;
+  emoji: string;
+  isSimulated: boolean;
+  contribution: number;
+  lastContributionAt: number;
+}
+
+export interface ClubRoot {
+  unlocked: boolean;
+  level: number;
+  weekIndex: number;
+  themeId: string;
+  playerContribution: number;
+  totalContribution: number;
+  goal: number;
+  milestonesClaimed: number[];
+  members: ClubMember[];
+  bannerCount: number;
+}
+
+// ---- Phase 10: Village Hub ----
+
+export interface VillageRoot {
+  reputation: number;     // 0..1000
+  visitedToday: Record<string, boolean>; // node id -> visited
+  lastVisitDay: number;
+}
+
+// ---- Phase 11-12: Expeditions & Energy ----
+
+export interface ExpeditionNode {
+  id: string;
+  kind: 'clear' | 'chest' | 'gather' | 'repair' | 'fish' | 'puzzle';
+  label: string;
+  costEnergy: number;
+  costItems?: Record<string, number>;
+  rewardCoins: number;
+  rewardXp: number;
+  rewardItems?: Record<string, number>;
+  completed: boolean;
+}
+
+export interface ExpeditionMap {
+  id: string;
+  name: string;
+  emoji: string;
+  unlockLevel: number;
+  nodes: ExpeditionNode[];
+  expiresAt: number;  // for limited-time maps; 0 = perm
+}
+
+export interface ExpeditionsRoot {
+  unlocked: boolean;
+  energy: number;
+  energyMax: number;
+  energyLastRegen: number;
+  activeMapId: string | null;
+  maps: Record<string, ExpeditionMap>;
+  dailyBonusDay: number;
+}
+
+// ---- Phase 13: Beauty Contest ----
+
+export interface ContestRoot {
+  weekIndex: number;
+  themeId: string;
+  points: number;
+  rewardClaimed: boolean;
+}
+
+// ---- Phase 14: Live-Ops Events ----
+
+export interface LiveEventRoot {
+  activeId: string | null;
+  weekIndex: number;
+  points: number;
+  rewardsClaimed: number[];
+  tokens: number;        // event currency
+  history: string[];     // event ids completed
+}
+
+// ---- Phase 15.4: Compost ----
+
+export interface CompostRoot {
+  bin: number;            // current compost stored
+  binCap: number;
+  ferment: number;        // amount currently fermenting
+  fermentDoneAt: number;
+}
+
+// ---- Phase 15.6: Animal breeds ----
+
+export interface AnimalBreedRoot {
+  byPen: Record<string, string>; // building id -> breed key
+  unlocked: Record<string, true>;
+}
+
+// ---- Phase 15.7: Visitor 2.0 ----
+
+export interface ActiveVisitor {
+  id: string;
+  name: string;
+  emoji: string;
+  itemKey: string;
+  qty: number;
+  reward: number;
+  tipChance: number;
+  arrivedAt: number;
+  expiresAt: number;
+  served: boolean;
+}
+
+export interface VisitorsRootV2 {
+  active: ActiveVisitor[];
+  nextSpawnAt: number;
+  totalServed: number;
+}
+
+// ---- Phase 15.8: Farm Reputation ----
+
+export interface ReputationRoot {
+  score: number;
+  tier: number;          // 0..4
+  lastUpdate: number;
+}
+
+// ---- Phase 15.9: Card Fusion ----
+
+export interface CardFusionRoot {
+  fragments: number;
+  fusedCards: string[];  // fused card ids
+}
+
+// ---- Phase 15.10: Forecast Planning ----
+
+export interface ForecastRoot {
+  days: Array<{ day: number; weather: Weather }>;
+}
+
+// ---- Phase 15.13: Helpers ----
+
+export interface Helper {
+  id: string;
+  role: 'collector' | 'restocker' | 'waterer' | 'seller';
+  hiredUntil: number;
+}
+export interface HelpersRoot {
+  hired: Helper[];
+}
+
+// ---- Phase 15.14: Journal ----
+
+export interface JournalEntry {
+  id: string;
+  at: number;            // game seconds when recorded
+  title: string;
+  body: string;
+  icon: string;
+}
+export interface JournalRoot {
+  entries: JournalEntry[];
+  flags: Record<string, true>;   // which milestone flags fired
+}
+
+// ---- Phase 15.17: Market Contracts ----
+
+export interface ContractDef {
+  id: string;
+  customerId: string;
+  items: Record<string, number>;
+  delivered: Record<string, number>;
+  rewardCoins: number;
+  rewardXp: number;
+  rewardMaterial?: string;
+  expiresAt: number;
+  signedAt: number;
+}
+export interface ContractsRoot {
+  active: ContractDef[];
+  offers: ContractDef[];
+  nextOfferAt: number;
+}
+
+// ---- Phase 15.19: Weather Hazards ----
+
+export interface HazardsRoot {
+  active: Array<{ kind: string; until: number }>;
+  preparedFlags: Record<string, true>; // 'heater', 'cover', 'irrigation', etc.
+}
+
+// ---- Phase 15.20: Friend codes ----
+
+export interface FriendCodeRoot {
+  myCode: string;
+  added: Array<{ code: string; name: string; addedAt: number }>;
+}
+
+// ---- Greenhouse functional ----
+
+export interface GreenhouseSlot {
+  cropKey: string;
+  plantedAt: number;
+  doneAt: number;
+}
+export interface GreenhouseRoot {
+  unlocked: boolean;
+  slots: GreenhouseSlot[];
+  cap: number;
+}
+
+// ---- Tool Shed ----
+
+export interface ToolShedRoot {
+  unlocked: boolean;
+  bonusSpeed: number;    // multiplier (e.g. 0.05 = +5% expedition clearing speed)
+}
+
+// ---- Building per-instance upgrades ----
+
+export interface BuildingUpgradeRoot {
+  byBuildingId: Record<string, number>; // building id -> level
+}
+
+// ---- Decoration sets ----
+
+export interface DecorSetsRoot {
+  collectedSets: Record<string, true>;  // set id -> collected
+}
 
 export interface GameState {
   coins: number;
@@ -671,6 +956,30 @@ export interface GameState {
   landmarks?: LandmarksRoot;
   friendship?: FriendshipRoot;
   buildingMastery?: BuildingMasteryRoot;
+  // Phase 4-15 expansion (v5+)
+  balloon?: BalloonRoot;
+  festivalCart?: FestivalCartRoot;
+  expansion?: ExpansionRoot;
+  club?: ClubRoot;
+  village?: VillageRoot;
+  expeditions?: ExpeditionsRoot;
+  contest?: ContestRoot;
+  liveEvent?: LiveEventRoot;
+  compost?: CompostRoot;
+  breeds?: AnimalBreedRoot;
+  visitorsV2?: VisitorsRootV2;
+  reputation?: ReputationRoot;
+  cardFusion?: CardFusionRoot;
+  forecast?: ForecastRoot;
+  helpers?: HelpersRoot;
+  journal?: JournalRoot;
+  contracts?: ContractsRoot;
+  hazards?: HazardsRoot;
+  friendCodes?: FriendCodeRoot;
+  greenhouse?: GreenhouseRoot;
+  toolShed?: ToolShedRoot;
+  buildingUpgrades?: BuildingUpgradeRoot;
+  decorSets?: DecorSetsRoot;
   saveVersion?: number;
   // Internal periodic timers
   _weatherPartT?: number;
@@ -682,6 +991,10 @@ export interface GameState {
   _stallTick?: number;
   _boatTick?: number;
   _trainTick?: number;
+  _balloonTick?: number;
+  _visitorTick?: number;
+  _contractsTick?: number;
+  _liveEventTick?: number;
 }
 
 // ---- Sprite cache shape ----

@@ -3236,3 +3236,154 @@ The final player fantasy:
 > “I built this farm. I know my crops, animals, customers, neighbors, weather patterns, market cycles, and production chains. Tomorrow there will be new deliveries, new weather, new market opportunities, and something good waiting for me.”
 
 That is the direction Sunny Acres should grow toward.
+
+---
+
+# 24. Implementation Checklist
+
+Status legend: ✅ implemented, 🟡 partial, ⬜ missing.
+
+## Phase 0 — Technical Foundation
+- [x] ✅ Save versioning (`saveVersion = 4`, `migrateSave`) — `src/save.ts`
+- [x] ✅ Default constructors per subsystem (`initX()` pattern) — every system file
+- [x] ✅ Unified timer rebase utility — `src/systems/timer.ts`
+- [x] ✅ Telemetry events — `src/systems/telemetry.ts`
+- [x] ✅ Central system registry (init wiring) — `src/main.ts`
+- [x] ✅ Debug tools — `src/systems/debug.ts` (dev panel: skip time, grant coins/XP/materials, unlock all)
+
+## Phase 1 — Storage Pressure
+- [x] ✅ Barn (raw goods → silo, produced → barn) — `src/systems/storage.ts`
+- [x] ✅ Silo separation, level caps, warn levels — `src/systems/storage.ts`
+- [x] ✅ Upgrade materials defined (plank/nail/screw/hinge/paint/panel/bolt/rope/tarp/deed/stake/map/mallet) — `src/data/items.ts`
+- [x] ✅ Material sources (orders, train, boat, gazette, treasures, daily, weekly, prestige) — multiple systems
+- [x] ✅ Full-storage UX (toast, panel warning) — `src/systems/storage.ts`, `src/ui/inventory-panel.ts`
+
+## Phase 2 — Roadside Shop / Sunny Market Stall
+- [x] ✅ Stall slots (2..5 by level) — `src/systems/market-stall.ts`
+- [x] ✅ Pricing band (70%/100%/150%) — `src/systems/market-stall.ts`
+- [x] ✅ Simulated buyer probabilities — `src/systems/market-stall.ts`
+- [x] ✅ Offline sales rebase — `src/systems/market-stall.ts` (`rebaseStallOnLoad`)
+- [x] ✅ Buyer flavor / villager pick — `src/systems/market-stall.ts`
+- [x] ✅ Market reputation (0..1000 tiered) — `src/systems/market-stall.ts`
+
+## Phase 3 — Sunny Gazette
+- [x] ✅ Forecast article — `src/systems/gazette.ts`
+- [x] ✅ Hot item with bonus — `src/systems/gazette.ts`
+- [x] ✅ Neighbor sale offers — `src/systems/gazette.ts`
+- [x] ✅ Help requests — `src/systems/gazette.ts`
+- [x] ✅ Event notice + Tip — `src/systems/gazette.ts`
+- [x] ✅ Daily rollover — `src/systems/gazette.ts`
+
+## Phase 4 — Physical Delivery Systems
+- [x] ✅ Truck orders (villagers, deliveries) — `src/systems/orders.ts`
+- [x] ✅ Boat deliveries (crate fill, bonus material, departure timer) — `src/systems/boat.ts`
+- [x] ✅ Train deliveries (loaded crates, route, return rewards, station upgrades) — `src/systems/train.ts`
+- [x] ✅ Hot Air Balloon (rare premium delivery, leaves timer) — `src/systems/balloon.ts`
+- [x] ✅ Festival Cart (weekly themed cart, points integration) — `src/systems/festival-cart.ts`
+
+## Phase 5 — Land Expansion & Obstacle Clearing
+- [x] ✅ Plot system (locked → unlockable → clearing → unlocked) — `src/systems/expansion.ts`
+- [x] ✅ Obstacle types (rocks, bushes, logs, mud, brambles, stumps) — `src/systems/expansion.ts`
+- [x] ✅ Clearing tools (axe, saw, pickaxe, shovel) — `src/data/items.ts`, `src/systems/expansion.ts`
+- [x] ✅ Obstacle rewards (coins, XP, materials, treasures) — `src/systems/expansion.ts`
+- [x] ✅ Special areas (East Meadow, Old Orchard, River Bend, Windy Hill, Forest Edge) — `src/systems/expansion.ts`
+- [x] ✅ Land-expansion materials integrated (deed, stake, map, mallet) — `src/systems/expansion.ts`
+
+## Phase 6 — Building Upgrades & Mastery Stars
+- [x] ✅ Mastery counter per building type — `src/systems/building-mastery.ts`
+- [x] ✅ Star thresholds (25 / 100 / 300) — `src/systems/building-mastery.ts`
+- [x] ✅ Mastery speed + quality buffs — `src/systems/building-mastery.ts`
+- [x] ✅ Per-building level upgrades (capacity / queue slots / speed) — `src/systems/building-upgrades.ts`
+
+## Phase 7 — Landmark Construction
+- [x] ✅ Multi-stage projects (Weather Tower, Market Pier, Sunny Station, Great Barn) — `src/systems/landmarks.ts`
+- [x] ✅ Stage rewards and unlock effects (storage +30, train level boost) — `src/systems/landmarks.ts`
+- [x] ✅ Greenhouse landmark (off-season crops once built) — `src/systems/landmarks.ts`, `src/systems/greenhouse.ts`
+
+## Phase 8 — Neighbor Help & Social Economy
+- [x] ✅ Friendship XP/level per villager — `src/systems/friendship.ts`
+- [x] ✅ Daily friendship gifts — `src/systems/friendship.ts`
+- [x] ✅ Help requests via Gazette — `src/systems/gazette.ts`
+- [x] ✅ Neighbor sale listings via Gazette — `src/systems/gazette.ts`
+- [x] ✅ Visit-a-neighbor screen (procedural farms, daily gift + buy) — `src/ui/friendship-panel.ts`
+
+## Phase 9 — Farming Club / Co-op
+- [x] ✅ Weekly themed club tasks — `src/systems/club.ts`
+- [x] ✅ Simulated member contributions — `src/systems/club.ts`
+- [x] ✅ Milestone rewards — `src/systems/club.ts`
+- [x] ✅ Club level + cosmetic banner — `src/systems/club.ts`
+
+## Phase 10 — Village / Town Hub
+- [x] ✅ Village hub map with nodes (Square, Bakery, Dock, Tower, Carpenter, Market, Station, Fairground) — `src/systems/village.ts`
+- [x] ✅ Village reputation stat — `src/systems/village.ts`
+- [x] ✅ Hub UI panel — `src/ui/village-panel.ts`
+
+## Phase 11 — Event Islands / Expeditions
+- [x] ✅ Expedition map types (Forest Clearing, Misty Lake, Storm Valley, Festival Island, Old Orchard) — `src/systems/expeditions.ts`
+- [x] ✅ Node-based exploration (clear / chest / repair / gather) — `src/systems/expeditions.ts`
+- [x] ✅ Expedition rewards (materials, weather fragments, decor, tools) — `src/systems/expeditions.ts`
+- [x] ✅ Expedition UI panel — `src/ui/expeditions-panel.ts`
+
+## Phase 12 — Expedition Energy & Tools
+- [x] ✅ Energy meter (regen 1/3min, cap 50) — `src/systems/expeditions.ts`
+- [x] ✅ Energy from food (bread/smoothie/pie/honey/cookie/cake) — `src/systems/expeditions.ts`
+- [x] ✅ Tool inventory (axe/saw/shovel/pickaxe/lantern/rope) — `src/data/items.ts`
+- [x] ✅ Daily energy bonus — `src/systems/expeditions.ts`
+
+## Phase 13 — Advanced Decoration & Beauty Contests
+- [x] ✅ Beauty Score tiers (Cozy Plot → Legendary Acres) — `src/systems/beautification.ts`
+- [x] ✅ Decoration sets (Spring Bloom / Autumn Harvest / Weather Mage / etc.) — `src/data/decorations.ts`, `src/systems/decor-sets.ts`
+- [x] ✅ Weekly beauty contest — `src/systems/contest.ts`
+- [x] ✅ Photo/share mode — `src/ui/snapshot-panel.ts`
+
+## Phase 14 — Live-Ops Calendar & Seasonal Event Framework
+- [x] ✅ Data-driven event registry — `src/systems/live-events.ts`
+- [x] ✅ Weekly production events (Baking Bonanza, Fishing Festival, Orchard Week, etc.) — `src/systems/live-events.ts`
+- [x] ✅ Event point rules + reward ladder — `src/systems/live-events.ts`
+- [x] ✅ Event shop (tokens) — `src/ui/live-events-panel.ts`
+
+## Phase 15 — Strong Optional Systems
+- [x] ✅ Recipe Book — `src/ui/recipe-book-panel.ts`
+- [x] ✅ Tool Shed (categorized tool inventory + bonuses) — `src/systems/tool-shed.ts`
+- [x] ✅ Greenhouse / off-season farming — `src/systems/greenhouse.ts`
+- [x] ✅ Compost (turn surplus/withered into fertilizer) — `src/systems/compost.ts`
+- [x] ✅ Seed traits / breeding hooks — `src/data/seed-traits.ts`, `src/systems/breeding.ts`
+- [x] ✅ Animal breeds — `src/data/animals.ts`, `src/systems/breeds.ts`
+- [x] ✅ Visitor 2.0 (walk-on visitors with item requests + tips) — `src/systems/visitors.ts`
+- [x] ✅ Farm Reputation — `src/systems/reputation.ts`
+- [x] ✅ Weather Card Collection / Fusion — `src/systems/card-fusion.ts`
+- [x] ✅ Weather forecast planning (2-3 days ahead) — `src/systems/forecast.ts`
+- [x] ✅ Farm layout planner (move mode) — `src/systems/layout-planner.ts`
+- [x] ✅ Bulk actions (plant area, harvest area, collect all production) — `src/systems/bulk-actions.ts`
+- [x] ✅ Farm helpers / assistants — `src/systems/helpers.ts`
+- [x] ✅ Farm Journal / Story Album — `src/systems/journal.ts`
+- [x] ✅ Museum / Collection Hall — `src/ui/museum-panel.ts`
+- [x] ✅ Crop rotation depth — `src/systems/soil.ts` (rotation penalties)
+- [x] ✅ Market contracts (24-72h batch deliveries) — `src/systems/contracts.ts`
+- [x] ✅ Seasonal recipe variants (Pumpkin Pie, Winter Cocoa, etc.) — `src/data/seasonal-recipes.ts`
+- [x] ✅ Weather hazards & preparation — `src/systems/hazards.ts`
+- [x] ✅ Friend codes / future social architecture — `src/systems/friend-codes.ts`
+
+## Section 16-22 — UX, Economy, Data, Risk, QA Notes
+
+These are guidance sections rather than discrete features. The codebase reflects them:
+
+- [x] ✅ System unlock pacing (level-gated unlocks via `unlocks.ts`)
+- [x] ✅ Grouped navigation (More sheet) — `index.html`, `mobile-shell.ts`
+- [x] ✅ Next-best-action helper — `src/ui/objective-rail.ts`, `src/systems/objectives.ts`
+- [x] ✅ Notification style (toasts, ready-notifier) — `src/ui/toasts.ts`, `src/systems/ready-notifier.ts`
+- [x] ✅ Limited currencies (coins, XP, talent, event tokens, weather fragments, energy)
+- [x] ✅ Save/load migration safety — `src/save.ts`
+- [x] ✅ Telemetry hooks — `src/systems/telemetry.ts`
+
+---
+
+# 25. Future Stretch (post-roadmap)
+
+These remain open for a v3 expansion (not covered in this checklist):
+
+- Real multiplayer backend (the friend-codes module is architecture-only).
+- Realtime push notifications for boat departures, train returns, contracts.
+- True 3D / isometric scene parallax beyond the procedural tile renderer.
+
+All other items in Phases 0–15 of this roadmap are now implemented.

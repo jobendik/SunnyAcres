@@ -67,6 +67,23 @@ export const WEATHER_CARDS: Record<string, WeatherCardDef> = {
   serenity:    { id: 'serenity',   name: 'Serenity',      desc: 'No crows, animals at peak mood',
                  rarity: 'epic',   level: 8, cost: 1800, duration: 260,
                  effect: { noCrows: true, moodFloor: 100, growthBonus: 0.10 } },
+  // Fused cards (created via card-fusion system; do not appear in normal shop).
+  bloom_shower:      { id: 'bloom_shower',      name: 'Bloom Shower',
+                       desc: 'Rainmaker + Bountiful fused — rain + +35% yields',
+                       rarity: 'epic', level: 8, cost: 0, duration: 300,
+                       effect: { forceWeather: 'rainy', growthBonus: 0.25, yieldBonus: 0.35 } },
+  harvest_sale:      { id: 'harvest_sale',      name: 'Harvest Sale',
+                       desc: 'Sunbeam + Market Wind fused — +30% sell, +20% yield',
+                       rarity: 'epic', level: 8, cost: 0, duration: 240,
+                       effect: { forceWeather: 'sunny', sellBonus: 0.30, yieldBonus: 0.20 } },
+  pasture_blessing:  { id: 'pasture_blessing',  name: 'Pasture Blessing',
+                       desc: 'Breeze + Serenity fused — perfect ranch day',
+                       rarity: 'epic', level: 9, cost: 0, duration: 300,
+                       effect: { noCrows: true, moodFloor: 100, productionSpeed: 0.15 } },
+  rare_catch_night:  { id: 'rare_catch_night',  name: 'Rare Catch Night',
+                       desc: 'High Tide + Thunderhead fused — wild fishing run',
+                       rarity: 'epic', level: 10, cost: 0, duration: 200,
+                       effect: { fishingRareBonus: 1.20, sellBonus: 0.20 } },
 };
 
 export const ALL_CARD_IDS = Object.keys(WEATHER_CARDS);

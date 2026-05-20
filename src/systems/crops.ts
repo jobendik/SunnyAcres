@@ -5,13 +5,19 @@ import { nowSeconds } from '../utils';
 import { specEffects } from './specializations';
 import { activeEffects as weatherGridEffects } from './weather-grid';
 import { perkValue } from './prestige';
+import { currentHazardMod } from './hazards';
 import type { Tile } from '../types';
 
 export function growthMultiplier(): number {
   const base = SEASON_INFO[state.season].growthMod * WEATHER[state.weather].growthMod;
   const sp = specEffects();
   const eff = weatherGridEffects();
-  return base * (1 + (sp.cropGrowth ?? 0)) * (1 + eff.growth) * (1 + perkValue('growthBoost'));
+  const hazard = currentHazardMod();
+  return base
+    * (1 + (sp.cropGrowth ?? 0))
+    * (1 + eff.growth)
+    * (1 + perkValue('growthBoost'))
+    * (1 + hazard.growth); // hazard.growth is negative when unprepared
 }
 
 export function cropStage(tile: Tile): number {

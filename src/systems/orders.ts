@@ -17,6 +17,10 @@ import { addPassPoints } from './season-pass';
 import { spawnHUDBurst } from './flyers';
 import { trackDelivery, friendshipLevel, friendshipHearts } from './friendship';
 import { hotItem } from './gazette';
+import { recordEventAction } from './live-events';
+import { addClubProgress } from './club';
+import { recordVillageEngagement } from './village';
+import { reputationCoinBonus } from './reputation';
 import type { Order } from '../types';
 
 export function generateOrder(): Order {
@@ -69,7 +73,7 @@ export function fulfillOrder(orderId: string): void {
   // Hot item bonus from the Gazette: any order including the hot item earns +25%.
   const hot = hotItem();
   const hasHot = hot && Object.keys(o.items).includes(hot.itemKey);
-  const reward = Math.floor(o.reward * (1 + lvlBonus + (hasHot ? 0.25 : 0)));
+  const reward = Math.floor(o.reward * (1 + lvlBonus + (hasHot ? 0.25 : 0) + reputationCoinBonus()));
   state.coins += reward;
   state.stats.earned += reward;
   state.stats.ordersFulfilled += 1;
@@ -104,6 +108,10 @@ export function fulfillOrder(orderId: string): void {
   dailyChallengeProgress('orders', null, 1);
   addWeeklyPoints(20, 'craft');
   addPassPoints(12);
+  // Live event hook: order_contains rule fires per item key in the order.
+  for (const k in o.items) recordEventAction('order_contains', k, o.items[k]!);
+  addClubProgress('order', 1);
+  recordVillageEngagement('order');
   track('order_fulfilled', { reward });
   checkAchievements();
 }

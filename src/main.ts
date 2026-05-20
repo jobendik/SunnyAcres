@@ -89,6 +89,40 @@ import { openBoatPanel } from './ui/boat-panel';
 import { openTrainPanel } from './ui/train-panel';
 import { openLandmarkPanel } from './ui/landmark-panel';
 import { openFriendshipPanel } from './ui/friendship-panel';
+// Phase 4-15 expansion systems
+import { initBalloon } from './systems/balloon';
+import { initFestivalCart, maybeRolloverCart } from './systems/festival-cart';
+import { initExpansion } from './systems/expansion';
+import { initClub, maybeRolloverClub } from './systems/club';
+import { initVillage } from './systems/village';
+import { initExpeditions } from './systems/expeditions';
+import { initContest, maybeRolloverContest } from './systems/contest';
+import { initLiveEvent, tickLiveEvent } from './systems/live-events';
+import { initCompost } from './systems/compost';
+import { initGreenhouse, unlockGreenhouse } from './systems/greenhouse';
+import { initBreeds } from './systems/breeds';
+import { initVisitorsV2 } from './systems/visitors-v2';
+import { initReputation } from './systems/reputation';
+import { initCardFusion } from './systems/card-fusion';
+import { initForecast, refreshForecast } from './systems/forecast';
+import { initHelpers } from './systems/helpers';
+import { initJournal, checkMilestones as checkJournalMilestones } from './systems/journal';
+import { initContracts } from './systems/contracts';
+import { initHazards } from './systems/hazards';
+import { initFriendCodes } from './systems/friend-codes';
+import { initToolShed } from './systems/tool-shed';
+import { initBuildingUpgrades } from './systems/building-upgrades';
+import { initDecorSets, refreshSetsAndAnnounce } from './systems/decor-sets';
+import { maybeEnableDebug } from './systems/debug';
+import { openBalloonPanel } from './ui/balloon-panel';
+import { openFestivalCartPanel } from './ui/festival-cart-panel';
+import { openClubPanel } from './ui/club-panel';
+import { openVillagePanel } from './ui/village-panel';
+import { openExpeditionsPanel } from './ui/expeditions-panel';
+import { openLiveEventsPanel } from './ui/live-events-panel';
+import { openExpansionPanel } from './ui/expansion-panel';
+import { openRecipeBook } from './ui/recipe-book-panel';
+import { openMuseum } from './ui/museum-panel';
 
 function setupInitialFarm(): void {
   // Irregular lake in the upper-left — ~20 tiles, big enough to build
@@ -157,6 +191,15 @@ function bindToolbarHandlers(): void {
   document.getElementById('open-train')!.addEventListener('click', openTrainPanel);
   document.getElementById('open-landmark')!.addEventListener('click', openLandmarkPanel);
   document.getElementById('open-friendship')!.addEventListener('click', openFriendshipPanel);
+  document.getElementById('open-balloon')?.addEventListener('click', openBalloonPanel);
+  document.getElementById('open-cart')?.addEventListener('click', openFestivalCartPanel);
+  document.getElementById('open-club')?.addEventListener('click', openClubPanel);
+  document.getElementById('open-village')?.addEventListener('click', openVillagePanel);
+  document.getElementById('open-expeditions')?.addEventListener('click', openExpeditionsPanel);
+  document.getElementById('open-events')?.addEventListener('click', openLiveEventsPanel);
+  document.getElementById('open-expansion')?.addEventListener('click', openExpansionPanel);
+  document.getElementById('open-recipe-book')?.addEventListener('click', openRecipeBook);
+  document.getElementById('open-museum')?.addEventListener('click', openMuseum);
   document.getElementById('save-btn')!.addEventListener('click', () => {
     saveGame();
     toast('Game saved!');
@@ -266,6 +309,33 @@ function init(): void {
   initLandmarks();
   initFriendship();
   initBuildingMastery();
+  // Phase 4-15 systems
+  initBalloon();
+  initFestivalCart(); maybeRolloverCart();
+  initExpansion();
+  initClub(); maybeRolloverClub();
+  initVillage();
+  initExpeditions();
+  initContest(); maybeRolloverContest();
+  initLiveEvent(); tickLiveEvent();
+  initCompost();
+  initGreenhouse();
+  // Greenhouse landmark already complete? auto-unlock its feature.
+  if (state.landmarks?.projects['greenhouse']?.completed) unlockGreenhouse();
+  initBreeds();
+  initVisitorsV2();
+  initReputation();
+  initCardFusion();
+  initForecast(); refreshForecast();
+  initHelpers();
+  initJournal(); checkJournalMilestones();
+  initContracts();
+  initHazards();
+  initFriendCodes();
+  initToolShed();
+  initBuildingUpgrades();
+  initDecorSets(); refreshSetsAndAnnounce();
+  maybeEnableDebug();
   // Rebase market stall offline sales.
   if (loaded && state.lastSessionEndedAt) {
     const awayS = Math.max(0, (Date.now() - state.lastSessionEndedAt) / 1000);
