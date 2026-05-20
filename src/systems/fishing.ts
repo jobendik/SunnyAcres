@@ -15,6 +15,9 @@ import { effectiveFishWeights, baitValueMultiplier } from './biome';
 import { activeEffects as weatherGridEffects } from './weather-grid';
 import { specEffects } from './specializations';
 import { track } from './telemetry';
+import { recordEventAction } from './live-events';
+import { addClubProgress } from './club';
+import { checkMilestones as checkJournalMilestones } from './journal';
 
 export function startFishing(): void {
   if (state.level < 3) {
@@ -101,6 +104,10 @@ export function tryHookFish(): void {
     recordDiscovery('fish', f.fishKind, 1);
     track('fish_caught', { kind: f.fishKind });
     checkAchievements();
+    // Live-event + club + journal
+    recordEventAction('fish_caught', f.fishKind, 1);
+    addClubProgress('fish', 1);
+    checkJournalMilestones();
   } else {
     toast('The fish got away!', 'error');
     sfx.splash();

@@ -20,13 +20,21 @@ import { collectionBonuses } from '../systems/collection';
 import { speedupQueue, nextQualityFlag, consumeQualityFlag, QUALITY_VALUE } from '../systems/catalysts';
 import { track } from '../systems/telemetry';
 import { recordProduction, masteryBadge, masterySpeedBuff, masteryQualityBuff, masteryProgress } from '../systems/building-mastery';
+import { recordEventAction } from '../systems/live-events';
+import { addClubProgress } from '../systems/club';
+import { checkMilestones as checkJournalMilestones } from '../systems/journal';
 import type { BuildingInstance } from '../types';
+
+import { seasonalRecipesFor } from '../data/seasonal-recipes';
+import { buildingLevel, buildingQueueBonus, buildingSpeedMod, buildingUpgradeCost, upgradeBuildingInstance } from '../systems/building-upgrades';
 
 export function openProductionPanel(b: BuildingInstance): void {
   const def = BUILDINGS[b.type]!;
-  const recipes = def.recipes!;
+  // Combine baseline recipes with any current seasonal recipes.
+  const seasonal = seasonalRecipesFor(b.type, state.season).map(r => r.recipe);
+  const recipes = [...(def.recipes ?? []), ...seasonal];
   const queue = state.prodQueues[b.id] ?? (state.prodQueues[b.id] = []);
-  const maxQueue = 4;
+  const maxQueue = 4 + buildingQueueBonus(b.id);
   const badge = masteryBadge(b.type);
   openModal(badge ? `${def.name} ${badge}` : def.name, null);
   document.getElementById('modal-tabs')!.innerHTML = '';
@@ -123,7 +131,7 @@ export function openProductionPanel(b: BuildingInstance): void {
         const adj = adjacencyBonus({ id: b.id, type: b.type, x: b.x, y: b.y });
         const mast = masterySpeedBuff(b.type);
         const speedReduction = Math.min(0.7, (sp.produceSpeed ?? 0) + eff.productionSpeed + cb.speedMult + adj + mast);
-        const time = Math.max(2, r.time * (1 - speedReduction));
+        const time = Math.max(2, r.time * (1 - speedReduction) * buildingSpeedMod(b.id));
         queue.push({ recipeIdx: idx, startTime: nowSeconds(), doneAt: nowSeconds() + time });
         sfx.click();
         render();
@@ -161,12 +169,20 @@ export function openProductionPanel(b: BuildingInstance): void {
         state.stats.produced++;
         collected++;
         recordProduction(b.type, 1);
+        // Live-event + club + journal hooks for production
+        for (const outKey in r.out) {
+          recordEventAction('produce', outKey, r.out[outKey]!);
+        }
+        if (b.type === 'bakery') {
+          addClubProgress('produce_bake', 1);
+        }
       }
       if (collected > 0) {
         sfx.harvest();
         toast(`Collected ${collected} item${collected > 1 ? 's' : ''}`);
         track('production_collected', { count: collected, building: b.type });
         checkAchievements();
+        checkJournalMilestones();
       } else {
         sfx.error();
       }

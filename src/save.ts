@@ -8,7 +8,7 @@ import { SAVE_KEY } from './constants';
 import { nowSeconds, rand } from './utils';
 import type { GameState, Tile } from './types';
 
-const CURRENT_SAVE_VERSION = 4;
+const CURRENT_SAVE_VERSION = 5;
 
 interface SaveData {
   saveVersion?: number;
@@ -65,6 +65,30 @@ interface SaveData {
   landmarks?: GameState['landmarks'];
   friendship?: GameState['friendship'];
   buildingMastery?: GameState['buildingMastery'];
+  // Phase 4-15 expansion (v5+)
+  balloon?: GameState['balloon'];
+  festivalCart?: GameState['festivalCart'];
+  expansion?: GameState['expansion'];
+  club?: GameState['club'];
+  village?: GameState['village'];
+  expeditions?: GameState['expeditions'];
+  contest?: GameState['contest'];
+  liveEvent?: GameState['liveEvent'];
+  compost?: GameState['compost'];
+  breeds?: GameState['breeds'];
+  visitorsV2?: GameState['visitorsV2'];
+  reputation?: GameState['reputation'];
+  cardFusion?: GameState['cardFusion'];
+  forecast?: GameState['forecast'];
+  helpers?: GameState['helpers'];
+  journal?: GameState['journal'];
+  contracts?: GameState['contracts'];
+  hazards?: GameState['hazards'];
+  friendCodes?: GameState['friendCodes'];
+  greenhouse?: GameState['greenhouse'];
+  toolShed?: GameState['toolShed'];
+  buildingUpgrades?: GameState['buildingUpgrades'];
+  decorSets?: GameState['decorSets'];
 }
 
 export function saveGame(): void {
@@ -124,6 +148,29 @@ export function saveGame(): void {
     landmarks: state.landmarks,
     friendship: state.friendship,
     buildingMastery: state.buildingMastery,
+    balloon: state.balloon,
+    festivalCart: state.festivalCart,
+    expansion: state.expansion,
+    club: state.club,
+    village: state.village,
+    expeditions: state.expeditions,
+    contest: state.contest,
+    liveEvent: state.liveEvent,
+    compost: state.compost,
+    breeds: state.breeds,
+    visitorsV2: state.visitorsV2,
+    reputation: state.reputation,
+    cardFusion: state.cardFusion,
+    forecast: state.forecast,
+    helpers: state.helpers,
+    journal: state.journal,
+    contracts: state.contracts,
+    hazards: state.hazards,
+    friendCodes: state.friendCodes,
+    greenhouse: state.greenhouse,
+    toolShed: state.toolShed,
+    buildingUpgrades: state.buildingUpgrades,
+    decorSets: state.decorSets,
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -137,8 +184,11 @@ function migrateSave(data: SaveData): SaveData {
   if (!data.saveVersion) data.saveVersion = 1;
   if (data.saveVersion < 4) {
     // v4: roadmap expansion fields default to undefined; subsystems init() on first use.
-    // (No destructive change needed; just stamp the version.)
     data.saveVersion = 4;
+  }
+  if (data.saveVersion < 5) {
+    // v5: Phase 4-15 expansion fields default to undefined; init() handles defaults.
+    data.saveVersion = 5;
   }
   return data;
 }
@@ -212,6 +262,29 @@ export function loadGame(): boolean {
     if (data.landmarks) state.landmarks = data.landmarks;
     if (data.friendship) state.friendship = data.friendship;
     if (data.buildingMastery) state.buildingMastery = data.buildingMastery;
+    if (data.balloon) state.balloon = data.balloon;
+    if (data.festivalCart) state.festivalCart = data.festivalCart;
+    if (data.expansion) state.expansion = data.expansion;
+    if (data.club) state.club = data.club;
+    if (data.village) state.village = data.village;
+    if (data.expeditions) state.expeditions = data.expeditions;
+    if (data.contest) state.contest = data.contest;
+    if (data.liveEvent) state.liveEvent = data.liveEvent;
+    if (data.compost) state.compost = data.compost;
+    if (data.breeds) state.breeds = data.breeds;
+    if (data.visitorsV2) state.visitorsV2 = data.visitorsV2;
+    if (data.reputation) state.reputation = data.reputation;
+    if (data.cardFusion) state.cardFusion = data.cardFusion;
+    if (data.forecast) state.forecast = data.forecast;
+    if (data.helpers) state.helpers = data.helpers;
+    if (data.journal) state.journal = data.journal;
+    if (data.contracts) state.contracts = data.contracts;
+    if (data.hazards) state.hazards = data.hazards;
+    if (data.friendCodes) state.friendCodes = data.friendCodes;
+    if (data.greenhouse) state.greenhouse = data.greenhouse;
+    if (data.toolShed) state.toolShed = data.toolShed;
+    if (data.buildingUpgrades) state.buildingUpgrades = data.buildingUpgrades;
+    if (data.decorSets) state.decorSets = data.decorSets;
     state.saveVersion = data.saveVersion ?? CURRENT_SAVE_VERSION;
 
     const offset = data.saveTime || 0;
@@ -253,6 +326,40 @@ export function loadGame(): boolean {
       for (const s of state.marketStall.slots) {
         s.listedAt += delta;
       }
+    }
+    if (state.balloon) {
+      if (state.balloon.leavesAt) state.balloon.leavesAt += delta;
+      if (state.balloon.nextAt) state.balloon.nextAt += delta;
+    }
+    if (state.festivalCart) {
+      if (state.festivalCart.endsAt) state.festivalCart.endsAt += delta;
+    }
+    if (state.expeditions) {
+      state.expeditions.energyLastRegen += delta;
+    }
+    if (state.contracts) {
+      for (const c of state.contracts.active) c.expiresAt += delta;
+      for (const o of state.contracts.offers) o.expiresAt += delta;
+      state.contracts.nextOfferAt += delta;
+    }
+    if (state.compost) {
+      if (state.compost.fermentDoneAt) state.compost.fermentDoneAt += delta;
+    }
+    if (state.greenhouse) {
+      for (const slot of state.greenhouse.slots) {
+        slot.plantedAt += delta;
+        slot.doneAt += delta;
+      }
+    }
+    if (state.helpers) {
+      for (const h of state.helpers.hired) h.hiredUntil += delta;
+    }
+    if (state.visitorsV2) {
+      for (const v of state.visitorsV2.active) {
+        v.arrivedAt += delta;
+        v.expiresAt += delta;
+      }
+      state.visitorsV2.nextSpawnAt += delta;
     }
     return true;
   } catch (e) {

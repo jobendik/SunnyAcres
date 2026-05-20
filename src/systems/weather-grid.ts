@@ -19,6 +19,9 @@ import { triggerFlash, triggerShake } from './juice';
 import { spawnParticles } from './particles';
 import { SW, SH } from '../canvas';
 import { screenToWorld } from './camera';
+import { recordEventAction as recordEventActionStub } from './live-events';
+import { addClubProgress as addClubProgressStub } from './club';
+import { checkMilestones as checkJournalMilestonesStub } from './journal';
 
 export function initWeatherGrid(): void {
   if (!state.weatherGrid) {
@@ -144,6 +147,10 @@ export function castGrid(): boolean {
   const cardNames = slotted.map(id => WEATHER_CARDS[id]!.name).join(' + ');
   toast(`🌦️ Cast: ${cardNames}`, 'gold');
   track('weather_grid_cast', { slotted: slotted.length, charges_left: g.charges });
+  // Live-event + club hooks
+  recordEventActionStub('card_cast', undefined, slotted.length);
+  addClubProgressStub('card_cast', slotted.length);
+  checkJournalMilestonesStub();
   updateHUD();
   return true;
 }

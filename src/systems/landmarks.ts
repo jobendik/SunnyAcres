@@ -12,6 +12,9 @@ import { toast } from '../ui/toasts';
 import { sfx } from '../audio/sfx';
 import { updateHUD } from '../ui/hud';
 import { spawnHUDBurst } from './flyers';
+import { recordVillageEngagement } from './village';
+import { addClubProgress } from './club';
+import { unlockGreenhouse } from './greenhouse';
 import type { LandmarkProject, LandmarkStage } from '../types';
 
 export interface LandmarkDef {
@@ -77,6 +80,20 @@ export const LANDMARKS: Record<string, LandmarkDef> = {
       { name: 'Frame the walls',    reqs: { plank: 6, nail: 6 },                  rewardCoins: 600, rewardXp: 60, rewardMaterial: 'plank' },
       { name: 'Raise the roof',     reqs: { plank: 5, screw: 5, rope: 3 },        rewardCoins: 1100, rewardXp: 90, rewardMaterial: 'hinge' },
       { name: 'Paint and polish',   reqs: { paint: 2, hinge: 3, candle: 3 },      rewardCoins: 1800, rewardXp: 160 },
+    ],
+  },
+  greenhouse: {
+    id: 'greenhouse',
+    name: 'Greenhouse',
+    emoji: '🌱',
+    unlockLevel: 14,
+    blurb: 'Restore the glass house — grow any crop in any season.',
+    reward: 'Unlocks off-season Greenhouse farming',
+    stages: [
+      { name: 'Clear broken glass', reqs: { plank: 4, nail: 3 },           rewardCoins: 500, rewardXp: 45, rewardMaterial: 'panel' },
+      { name: 'Repair frame',       reqs: { plank: 6, screw: 4, bolt: 2 }, rewardCoins: 900, rewardXp: 75, rewardMaterial: 'tarp' },
+      { name: 'Install irrigation', reqs: { rope: 3, hinge: 2, tarp: 1 },  rewardCoins: 1400, rewardXp: 120, rewardMaterial: 'paint' },
+      { name: 'Weather regulator',  reqs: { paint: 2, lavender: 4, honey: 2 }, rewardCoins: 2200, rewardXp: 180 },
     ],
   },
 };
@@ -176,6 +193,9 @@ function completeStage(id: string): void {
   spawnHUDBurst('coin', Math.min(8, 3 + Math.floor(stage.rewardCoins / 100)));
   track('landmark_stage_completed', { id, stage: p.stageIdx });
   toast(`${def.emoji} ${def.name}: stage complete! +${stage.rewardCoins}💰 +${stage.rewardXp}XP`, 'gold');
+  // Village rep + club progress
+  recordVillageEngagement('landmark_stage');
+  addClubProgress('landmark_stage', 1);
   // Advance stage / complete project.
   p.contributed = {};
   p.stageIdx += 1;
@@ -197,6 +217,9 @@ function onLandmarkComplete(id: string): void {
   }
   if (id === 'sunnyStation' && state.train) {
     state.train.level = Math.max(state.train.level, 2);
+  }
+  if (id === 'greenhouse') {
+    unlockGreenhouse();
   }
 }
 

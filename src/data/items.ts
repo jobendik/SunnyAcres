@@ -72,4 +72,16 @@ export const ITEMS: Record<string, ItemDef> = {
   stake:      { name: 'Marker Stake', icon: 'stake',     sell: 25,  level: 5 },
   map:        { name: 'Survey Map',  icon: 'map',        sell: 80,  level: 6 },
   mallet:     { name: 'Mallet',      icon: 'mallet',     sell: 45,  level: 5 },
+  // Phase 5: Clearing tools
+  axe:        { name: 'Axe',         icon: 'axe',        sell: 60,  level: 5 },
+  saw:        { name: 'Saw',         icon: 'saw',        sell: 70,  level: 6 },
+  shovel:     { name: 'Shovel',      icon: 'shovel',     sell: 40,  level: 5 },
+  pickaxe:    { name: 'Pickaxe',     icon: 'pickaxe',    sell: 75,  level: 6 },
+  // Phase 11-12: Expedition tools & rewards
+  lantern:    { name: 'Lantern',     icon: 'lantern',    sell: 55,  level: 7 },
+  fragment:   { name: 'Weather Fragment', icon: 'fragment', sell: 30, level: 5 },
+  // Phase 14: Event tokens (do not sell)
+  token:      { name: 'Festival Token', icon: 'token',   sell: 0,   level: 4 },
+  // Phase 15.4: Compost output
+  compost:    { name: 'Compost',     icon: 'compost',    sell: 6,   level: 3 },
 };

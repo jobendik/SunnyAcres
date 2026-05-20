@@ -15,6 +15,7 @@ import { toast } from '../ui/toasts';
 import { sfx } from '../audio/sfx';
 import { updateHUD } from '../ui/hud';
 import { spawnHUDBurst } from './flyers';
+import { recordVillageEngagement } from './village';
 import type { BoatRoot, BoatCrate, MaterialKey } from '../types';
 
 const BOAT_NAMES = [
@@ -179,6 +180,7 @@ function departBoat(fullCompletion: boolean): void {
   track('boat_departed', { name: b.boatName, full: fullCompletion, coins: totalCoins });
   if (fullCompletion) {
     toast(`⛵ "${b.boatName}" departed FULL! +${totalCoins}💰 +${totalXp} XP + 1 ${ITEMS[b.bonusMaterial ?? '']?.name ?? 'bonus material'}`, 'gold');
+    recordVillageEngagement('boat_full');
   } else if (totalCoins > 0) {
     toast(`⛵ "${b.boatName}" departed. +${totalCoins}💰 +${totalXp} XP`, 'gold');
   } else {

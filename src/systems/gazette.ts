@@ -11,6 +11,7 @@ import { VILLAGERS, VILLAGER_IDS } from '../data/characters';
 import { addItem, removeItem } from './inventory';
 import { addXP } from './xp';
 import { bumpFriendship } from './friendship';
+import { recordVillageEngagement } from './village';
 import { track } from './telemetry';
 import { rand, randi, choice } from '../utils';
 import { toast } from '../ui/toasts';
@@ -187,6 +188,7 @@ export function fulfillHelpRequest(requestId: string): boolean {
   req.done = true;
   const v = VILLAGERS[req.neighborId];
   bumpFriendship(req.neighborId, 12);
+  recordVillageEngagement('help_request');
   sfx.coin();
   toast(
     `${v?.emoji ?? '🙏'} ${v?.name ?? 'A neighbor'}: "Thank you!" +${req.rewardCoins}💰${req.rewardMaterial ? ' + 1 ' + (ITEMS[req.rewardMaterial]?.name ?? req.rewardMaterial) : ''}`,

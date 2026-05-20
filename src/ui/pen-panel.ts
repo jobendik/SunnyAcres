@@ -19,6 +19,9 @@ import { checkAchievements } from '../systems/achievements';
 import { floatText } from '../systems/particles';
 import { moodLevel, moodMultipliers } from '../systems/animal-mood';
 import { specEffects } from '../systems/specializations';
+import { breedSpeedMod, breedYieldChance } from '../systems/breeds';
+import { recordEventAction } from '../systems/live-events';
+import { addClubProgress } from '../systems/club';
 import type { BuildingInstance } from '../types';
 
 export function openPenPanel(b: BuildingInstance): void {
@@ -37,7 +40,7 @@ export function openPenPanel(b: BuildingInstance): void {
     const mood = moodLevel(b.id);
     const mm = moodMultipliers(b.id);
     const sp = specEffects();
-    const effectiveTime = aniDef.produceTime / mm.speed / (1 + (sp.animalSpeed ?? 0));
+    const effectiveTime = aniDef.produceTime * breedSpeedMod(b.id) / mm.speed / (1 + (sp.animalSpeed ?? 0));
     const slots: string[] = [];
     for (let i = 0; i < def.capacity!; i++) {
       const a = animals[i];
@@ -134,11 +137,15 @@ export function openPenPanel(b: BuildingInstance): void {
           const elapsed = nowSeconds() - a.lastProduced;
           if (elapsed < effectiveTime) return;
           if (isHungry) { toast('Animals too hungry!', 'error'); return; }
-          const yieldAmt = Math.max(1, Math.round(1 * mm.yield * (1 + (sp.animalYield ?? 0))));
+          const breedBonus = Math.random() < breedYieldChance(b.id) ? 1 : 0;
+          const yieldAmt = Math.max(1, Math.round(1 * mm.yield * (1 + (sp.animalYield ?? 0)))) + breedBonus;
           addItem(aniDef.produces, yieldAmt);
           addXP(aniDef.xp);
           state.stats.produced++;
           state.stats.itemsProduced[aniDef.produces] = (state.stats.itemsProduced[aniDef.produces] ?? 0) + yieldAmt;
+          // Live event + club hooks
+          recordEventAction('animal_produce', aniDef.produces, yieldAmt);
+          addClubProgress('animal_produce', yieldAmt);
           a.lastProduced = nowSeconds();
           sfx.harvest();
           floatText(

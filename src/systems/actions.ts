@@ -32,6 +32,10 @@ import { spawnFlyerBurst } from './flyers';
 import { triggerFlash, triggerShake } from './juice';
 import { spawnPop } from './pops';
 import { sprites } from '../sprites';
+import { recordEventAction } from './live-events';
+import { addClubProgress } from './club';
+import { checkMilestones as checkJournalMilestones } from './journal';
+import { refreshSetsAndAnnounce } from './decor-sets';
 
 export function tryPlaceDecoration(gx: number, gy: number): void {
   const placing = state.placing!;
@@ -76,6 +80,7 @@ export function tryPlaceDecoration(gx: number, gy: number): void {
   toast(`Placed ${def.name}!`, 'xp');
   updateHUD();
   checkAchievements();
+  refreshSetsAndAnnounce();
 }
 
 export function tryPlow(gx: number, gy: number): void {
@@ -201,6 +206,9 @@ export function tryHarvestOrInteract(gx: number, gy: number): void {
     addPassPoints(yieldAmt);
     maybeSpawnChest();
     checkAchievements();
+    recordEventAction('harvest', undefined, yieldAmt);
+    addClubProgress('harvest', yieldAmt);
+    checkJournalMilestones();
     track('harvest', { crop: crop.item, amt: yieldAmt });
   }
 }

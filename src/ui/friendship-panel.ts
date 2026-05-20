@@ -9,6 +9,9 @@ import {
   initFriendship, friendshipLevel, friendshipXp,
   friendshipNeedForNext, claimDailyGift, canClaimDailyGift, friendshipHearts,
 } from '../systems/friendship';
+import { initVisitorsV2, activeVisitors, serveVisitor, dismissVisitor } from '../systems/visitors-v2';
+import { ITEMS } from '../data/items';
+import { sprites } from '../sprites';
 import { updateHUD } from './hud';
 
 export function openFriendshipPanel(): void {
@@ -20,7 +23,29 @@ export function openFriendshipPanel(): void {
 }
 
 function render(body: HTMLElement): void {
+  initVisitorsV2();
+  const visitors = activeVisitors();
   let html = `<p style="margin:0 0 10px;color:#666;font-size:12px">Deliver orders and help with requests to grow friendships. Higher friendships unlock daily gifts and bonus rewards.</p>`;
+
+  // Walking visitors (Visitor 2.0)
+  if (visitors.length > 0) {
+    html += '<div style="margin:6px 0 10px"><b>👋 Visitors at the farm</b></div>';
+    html += '<div class="landmark-reqs">';
+    for (const v of visitors) {
+      const have = state.inv[v.itemKey] ?? 0;
+      const ok = have >= v.qty;
+      html += `<div class="landmark-req">
+        <span style="font-size:22px">${v.emoji}</span>
+        <div class="landmark-req-name">${v.name}<br><small>wants ${v.qty}× ${ITEMS[v.itemKey]?.name ?? v.itemKey}</small></div>
+        <img class="ico" src="${sprites.item[v.itemKey]?.toDataURL() ?? ''}">
+        <div class="landmark-req-progress">+${v.reward}💰</div>
+        <button class="btn small primary" data-serve="${v.id}" ${ok ? '' : 'disabled'}>${ok ? 'Serve' : 'Need more'}</button>
+        <button class="btn small" data-dismiss="${v.id}">Wave off</button>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
   html += '<div class="friend-grid">';
   for (const id of VILLAGER_IDS) {
     const v = VILLAGERS[id]!;
@@ -57,6 +82,20 @@ function render(body: HTMLElement): void {
         updateHUD();
         render(body);
       }
+    }),
+  );
+  body.querySelectorAll<HTMLButtonElement>('button[data-serve]').forEach(btn =>
+    btn.addEventListener('click', () => {
+      if (serveVisitor(btn.dataset.serve!)) {
+        updateHUD();
+        render(body);
+      }
+    }),
+  );
+  body.querySelectorAll<HTMLButtonElement>('button[data-dismiss]').forEach(btn =>
+    btn.addEventListener('click', () => {
+      dismissVisitor(btn.dataset.dismiss!);
+      render(body);
     }),
   );
 }
