@@ -1,6 +1,6 @@
 # Sunny Acres — A Farming Adventure
 
-A canvas-based farming game with procedurally generated sprites, audio, weather, quests, and orders. Originally a single ~5,600-line HTML file, now refactored into a modular TypeScript codebase built with Vite.
+A canvas-based farming game with procedurally generated sprites, audio, weather, quests, and orders.
 
 Live demo: **https://jobendik.github.io/sunnyacres/** (deployed automatically on every push to `main`).
 
