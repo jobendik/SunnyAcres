@@ -1,8 +1,16 @@
 # Sunny Acres — A Farming Adventure
 
-A canvas-based farming game with procedurally generated sprites, audio, weather, quests, and orders.
+A cozy, browser-only farming/management game with procedurally generated
+sprites, music, and SFX. Plant crops, raise animals, fish, run production
+chains, deliver to a small town, and master the weather itself with the
+signature **Weather Mastery Grid**.
 
-Live demo: **https://jobendik.github.io/sunnyacres/** (deployed automatically on every push to `main`).
+Built in TypeScript, rendered with `<canvas>`, with **zero external game
+assets** — every sprite is drawn at boot and every sound is synthesized
+via the Web Audio API.
+
+Live demo: **https://jobendik.github.io/sunnyacres/** (deploys automatically
+on every push to `main`).
 
 ## Quick start
 
@@ -14,99 +22,171 @@ npm run preview    # preview the production build locally
 npm run typecheck  # run tsc without emit
 ```
 
+## Core gameplay loop
+
+1. **Plow** grass → **plant** seeds → wait for growth → **harvest**.
+2. Sell crops at the **Shop** or list them at the **Market Stall** for
+   passive sales while you play.
+3. Build **production buildings** (Feed Mill, Bakery, Hen House, …) that
+   turn raw goods into finished products worth far more than raw items.
+4. **Deliver** to local customers, the **Boat**, the **Train**, the
+   **Balloon**, and the **Festival Cart** for big rewards.
+5. **Specialize** at Lv 5 and start **casting Weather Cards** to bend the
+   weather to your needs.
+6. **Expand** your land (Lv 7+), build **Landmark** projects, join the
+   **Farming Club** (Lv 15), and run **Expeditions** (Lv 16+) at endgame.
+
+The first 10 minutes deliberately surface only the core loop. New systems
+unlock and appear in the More menu as you level up — see
+[`docs/system-fatigue-audit.md`](docs/system-fatigue-audit.md) for the full
+tier breakdown.
+
+## Signature mechanic: Weather Mastery Grid
+
+Unlocks at Lv 5. Players craft **Weather Cards** (sunbeam, rainmaker,
+thunderhead, marketwind, serenity, …) and slot them into a small
+programmable grid. Activating the grid spends a daily charge and overlays
+the chosen effects — faster growth, +sell prices, no crows, animal mood
+floor, rare fish bias — for that activation's duration.
+
+Cards can be **fused** with Weather Fragments (won from balloons,
+expeditions, and obstacle clearing) into stronger composite cards.
+
+## Major systems
+
+**Core (Lv 1–4)**
+- Plow / Plant / Harvest, Shop, Build, Decor
+- Quests, Orders, Achievements, News, Help
+- Daily streak, Daily Wheel, Season Pass, Tutorial
+
+**Market & Logistics (Lv 3–13)**
+- Market Stall (passive simulated buyers, offline sales)
+- Sunny Gazette (daily paper: hot item, sales, help requests)
+- Boat / Train / Balloon / Festival Cart deliveries
+- Market Contracts (Lv 9, multi-day bulk orders)
+- Walk-on Visitors (Lv 5, short-window tippers)
+
+**Progression & Mastery (Lv 5+)**
+- Weather Mastery Grid + Card Fusion
+- Specializations (primary at Lv 5, secondary at Lv 15)
+- Collection Codex (passive perks per discovery)
+- Building Mastery (per-building star ranks)
+- Building Upgrades (per-instance levels)
+
+**Social (Lv 3–15)**
+- Friendship with named villagers (gifts, deliveries)
+- Village Hub (visit nodes, reputation)
+- Farming Club (Lv 15, weekly shared goal w/ peers)
+- Simulated leaderboard (5 categories)
+
+**Exploration (Lv 7+)**
+- Land Expansion (Lv 7+, 5 plots with obstacle clearing)
+- Landmark Projects (Windmill, Old Mill, Greenhouse, Great Barn, Fishery,
+  Lighthouse)
+- Expeditions (Lv 16+, energy-gated exploration on 5 maps)
+- Greenhouse (any crop any season, needs compost)
+- Compost (recycle low-value crops into fertilizer)
+
+**Endgame (Lv 18+)**
+- Helpers (Lv 18, hire collectors / restockers / waterers / sellers)
+- Tool Shed (Lv 10, expedition speed bonus)
+- Prestige (Lv 25, reset for permanent Talent perks)
+
+**Live ops / events**
+- Live Events (weekly themed events with token rewards)
+- Beauty Contest (weekly farm-decoration scoring)
+- Weather Hazards (preparation challenges)
+- Idle income on return (welcome-back screen with summary)
+
+## Technical architecture
+
+- **Single mutable state**: `src/state.ts` exports a `state: GameState`
+  singleton. Every system imports it and mutates fields directly.
+  See [`src/types.ts`](src/types.ts) for the full schema.
+- **Zero dependencies**: gameplay, sprites, and audio all use vanilla
+  browser APIs (`<canvas>`, Web Audio, `localStorage`,
+  `requestAnimationFrame`). The only `devDependencies` are TypeScript and
+  Vite.
+- **Procedural sprites**: every visible asset is drawn into an offscreen
+  `<canvas>` at boot via `buildSprites()` and cached. No image files.
+- **Save**: serialized to `localStorage` under
+  `sunnyacres-save-v3` with an internal schema version (currently v5).
+  Timers are rebased on load so growth/production/boats/balloons/etc.
+  resume cleanly across reloads and offline sessions.
+- **Progressive disclosure**: `src/systems/feature-visibility.ts` is the
+  single source of truth for which More-menu buttons appear at each
+  level. New players see a small curated set; late-game players see
+  everything.
+- **Objective Rail**: `src/systems/objectives.ts` ranks the top 1–4
+  next-best actions across every implemented system, surfaced at the top
+  of the screen so the player always knows what to do next.
+
 ## Project layout
 
 ```
 src/
-├── main.ts                # entry point — init() and the requestAnimationFrame loop
-├── style.css              # all global styles
+├── main.ts                # entry — init() + requestAnimationFrame loop
+├── state.ts               # singleton GameState
 ├── types.ts               # cross-cutting TypeScript interfaces
-├── utils.ts               # rand, clamp, lerp, nowSeconds, xpForLevel, ...
-├── constants.ts           # TILE, GRID_W/H, DAY_SECONDS, SAVE_KEY
-├── canvas.ts              # canvas element, 2D context, resize/DPR
-├── state.ts               # the singleton GameState object
-├── save.ts                # localStorage serialization
-├── input.ts               # pointer/touch/wheel/keyboard handlers
-├── decor.ts               # background decoration trees
-├── render.ts              # the render() function (depth-sorted draw)
-├── loop.ts                # update(dt) — particles, weather, events, autosave
-├── audio/
-│   ├── sfx.ts             # ensureAudio, playTone/playNoise, sfx.* presets
-│   └── music.ts           # procedural pentatonic ambient music
+├── save.ts                # localStorage serialization + migration
+├── loop.ts                # update(dt) — ticks all systems
+├── render.ts              # depth-sorted canvas render
+├── style.css              # all global styles
 ├── data/                  # static game data tables (typed)
-│   ├── items.ts           # ITEMS — sell prices, level requirements
-│   ├── crops.ts           # CROPS — grow time, seed cost, yields
-│   ├── animals.ts         # ANIMALS — produce, feed cost, sprite body shape
-│   ├── buildings.ts       # BUILDINGS — pens, production, fishing dock + recipes
-│   ├── decorations.ts     # DECORATIONS
-│   ├── orchards.ts        # ORCHARDS — fruit trees
-│   ├── fish.ts            # FISH species
-│   ├── seasons.ts         # SEASONS, SEASON_INFO, WEATHER
-│   └── achievements.ts    # ACHIEVEMENTS list with check predicates
-├── sprites/               # procedural canvas-based sprite generation
-│   ├── index.ts           # buildSprites(); shared sprites cache
-│   ├── tiles.ts           # grass / soil / plowed / path / water
-│   ├── crops.ts           # spriteCropStage()
-│   ├── items.ts           # spriteItem() — all item icons + tool icons
-│   ├── animals.ts         # spriteAnimal() — per-kind body styling
-│   ├── buildings.ts       # spriteBuilding() + spriteDuckPondOverride()
-│   ├── decorations.ts     # spriteDecoration()
-│   ├── orchards.ts        # spriteOrchard() — sapling → mature → fruiting
-│   └── entities.ts        # spriteCrow, spriteDog, spriteDecorTree
-├── systems/               # gameplay logic — pure-ish state mutations
-│   ├── grid.ts            # initGrid, tileAt, canPlaceBuilding, ...
-│   ├── camera.ts          # worldToScreen / screenToWorld / clampCamera
-│   ├── crops.ts           # cropStage, isWithered, isWilting, growthMultiplier
-│   ├── inventory.ts       # addItem, removeItem, hasItems
-│   ├── xp.ts              # addXP — with level-up effects
-│   ├── particles.ts       # spawnParticles, floatText
-│   ├── orders.ts          # generateOrder, fulfillOrder, renderOrders
-│   ├── quests.ts          # generate/refill/claim quests
-│   ├── achievements.ts    # checkAchievements + popup
-│   ├── weather.ts         # season + weather rotation
-│   ├── events.ts          # random events (crows, merchant, lucky, ...)
-│   ├── crows.ts           # crow AI and shooing
-│   ├── dog.ts              # pet dog AI (unlocked at level 4)
-│   ├── fishing.ts         # fishing minigame
-│   ├── trees.ts           # orchard tree growth + harvest
-│   ├── pens.ts            # pen feed level (hunger) system
-│   └── actions.ts         # tryPlow, tryPlant, tryHarvest, tryPlaceDecoration
-└── ui/                    # DOM-driven UI panels
-    ├── hud.ts             # top HUD numbers
-    ├── tools.ts           # tool buttons + icon attach
-    ├── toasts.ts          # toast + toastXP notifications
-    ├── tooltip.ts         # hover tooltip over tiles
-    ├── modal.ts           # generic modal + tabs
-    ├── shop.ts            # seeds / trees / sell / feed tabs
-    ├── inventory-panel.ts
-    ├── build-menu.ts      # building list + tryPlaceBuilding
-    ├── building-panel.ts  # dispatch to pen / production / fishing
-    ├── pen-panel.ts       # animal pen UI
-    ├── production-panel.ts# recipes + queue
-    ├── decor-menu.ts
-    ├── achievements-panel.ts
-    ├── news.ts            # daily news bulletin
-    └── help.ts            # controls & tutorial modal
+├── sprites/               # procedural sprite generation
+├── audio/                 # synthesized sfx + ambient music
+├── systems/               # gameplay logic (70+ files, one per system)
+└── ui/                    # DOM-driven UI panels (one per panel)
+docs/
+└── system-fatigue-audit.md   # the clarity/pacing pass design doc
 ```
 
-## Architecture
+## Save / load
 
-- **Single mutable state**: `src/state.ts` exports a `state: GameState` singleton. Every system imports it and mutates fields directly.
-- **No external dependencies**: gameplay, sprites and audio all use vanilla browser APIs (`<canvas>`, Web Audio, `localStorage`, `requestAnimationFrame`).
-- **Procedural sprites**: every visible asset is drawn into an offscreen `<canvas>` at boot via `buildSprites()` and cached. No image files.
-- **Save**: serialized to `localStorage` under `sunnyacres-save-v2`. Timers are rebased on load so growth/production resume cleanly.
+The game autosaves every ~20 seconds and on `beforeunload`. The save key
+is `sunnyacres-save-v3`. Each subsystem's `init*()` function is defensive
+against missing fields, so older saves load cleanly even after new
+systems are added. Timer fields (crop growth, production jobs, boat
+docking, expedition energy, contracts, balloons, visitors, …) are all
+rebased by `Δt = nowSeconds() - saveTime` so offline progress resolves
+correctly.
+
+If you want to nuke a save during development:
+
+```js
+localStorage.removeItem('sunnyacres-save-v3')
+```
+
+## Debug helpers
+
+Append `?debug=1` to the URL to expose `window.dbg` with helpers:
+
+```js
+dbg.coins(5000)     // add coins
+dbg.xp(500)         // add XP
+dbg.item('wheat', 50)
+dbg.mat(5)          // grant 5× of every material
+dbg.skip(2)         // skip 2 hours (advances boat/train/balloon/stall)
+dbg.level(15)       // jump to a level for testing the unlock tier
+dbg.refreshGazette()
+```
+
+These do not affect normal play.
 
 ## GitHub Pages deployment
 
-The `.github/workflows/deploy.yml` workflow runs on every push to `main`:
+`.github/workflows/deploy.yml` runs on every push to `main`:
 1. `npm ci`
 2. `npm run typecheck`
 3. `npm run build`
-4. Publishes `dist/` to the `github-pages` environment via `actions/deploy-pages`.
+4. Publishes `dist/` via `actions/deploy-pages`.
 
-Before the first deploy, enable Pages with **Source: GitHub Actions** in **Settings → Pages**.
+Before the first deploy, enable Pages with **Source: GitHub Actions** in
+**Settings → Pages**.
 
-The asset base path is `/sunnyacres/` (configured in `vite.config.ts`). For forks with a different repo name, set `VITE_BASE=/your-repo/` in the workflow env or override in `vite.config.ts`.
+The asset base path is `/sunnyacres/` (configured in `vite.config.ts`).
+For forks with a different repo name, set `VITE_BASE=/your-repo/` in the
+workflow env or override in `vite.config.ts`.
 
 ## Controls
 
@@ -114,7 +194,36 @@ The asset base path is `/sunnyacres/` (configured in `vite.config.ts`). For fork
 | ------------- | ------ |
 | `1` / `2` / `3` | Hand / Plow / Seed tool |
 | Drag | Pan the camera |
-| Scroll | Zoom |
+| Scroll / Pinch | Zoom |
 | Tap building | Open its panel |
 | Tap crow | Shoo it away |
 | `Esc` | Cancel placement / close modal |
+| Tap ⋯ (More) | Reveal the level-gated system menu |
+| Tap 📋 (Quests) | Open Quests & Orders side panel |
+
+## Testing checklist
+
+Manual smoke test for new builds:
+- [ ] Fresh save: splash → tutorial spotlight on Plow → can plow, plant,
+      harvest, sell, deliver an order, build a Bakery.
+- [ ] Lv 1 More menu shows ≤ 12 items (no boat/train/club/prestige).
+- [ ] Lv 5 More menu shows Grid + Path teasers / unlocked.
+- [ ] Lv 10 More menu shows Boat (unlocked), Balloon (unlocked), Train teaser.
+- [ ] Objective Rail surfaces a relevant action every 0.75s; no duplicates.
+- [ ] Existing v5 save loads without console errors.
+- [ ] `npm run typecheck` and `npm run build` pass.
+
+## Current status
+
+The game is feature-complete for the Phase-1 through Phase-15 roadmap.
+The most recent commit ("Visual + game-feel overhaul") added identity,
+world polish, juice, and onboarding improvements. This pass adds clarity,
+progressive UI disclosure, and a richer Objective Rail without removing
+any systems.
+
+The game is **intentionally code-generated and procedural** — no external
+game assets, no CDN, no analytics, no network calls. It loads in under a
+second and runs offline.
+
+Real multiplayer (friend codes) is architecturally scaffolded but not
+networked; the leaderboard and clubs use simulated peers.

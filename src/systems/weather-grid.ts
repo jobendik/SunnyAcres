@@ -41,8 +41,14 @@ export function maybeUnlockGrid(): void {
   if (!state.weatherGrid) return;
   if (state.level >= 5 && !state.weatherGrid.unlocked) {
     state.weatherGrid.unlocked = true;
+    // Two-stage announcement: first the headline, then a follow-up that
+    // tells the player exactly how to engage. Otherwise the signature
+    // mechanic launches with zero in-game guidance (audit issue #11).
     toast('🌦️ Weather Mastery Grid unlocked!', 'gold');
     sfx.bell();
+    setTimeout(() => {
+      toast('Open ⋯ More → Grid to craft your first Weather Card.');
+    }, 2200);
     track('weather_grid_unlocked');
   }
 }

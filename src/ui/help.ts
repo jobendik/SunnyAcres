@@ -1,4 +1,6 @@
 import { openModal } from './modal';
+import { nextUnlocks } from '../systems/unlocks';
+import { state } from '../state';
 
 function isTouchDevice(): boolean {
   return (typeof window !== 'undefined') &&
@@ -74,6 +76,14 @@ export function openHelp(): void {
       <p style="margin-top:10px;font-style:italic;color:#666">Tip: production chains
       (wheat→bread, apple→juice, wool→cloth) earn far more than raw sales.</p>
       <p style="margin-top:8px;font-style:italic;color:#666">Pro tip: chain a Weather Card with the Daily Forecast Puzzle and Market Scarcity — that's where massive gains come from.</p>
+      ${(() => {
+        const next = nextUnlocks(3);
+        if (!next.length) return '';
+        const rows = next.map(u => `<li>Lv ${u.level} — ${u.icon} <b>${u.label}</b>${u.description ? ` — ${u.description}` : ''}</li>`).join('');
+        return `<p style="margin-top:14px"><b>Coming next for you (Lv ${state.level})</b></p>
+          <ul style="text-align:left;font-size:13px;line-height:1.5;padding-left:20px;color:#555">${rows}</ul>
+          <p style="margin-top:6px;font-size:12px;color:#888">The ⋯ More menu reveals new systems as you reach their level — keep playing!</p>`;
+      })()}
     </div>
   `;
 }

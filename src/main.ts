@@ -8,7 +8,7 @@ import { state } from './state';
 import { SW, SH } from './canvas';
 import { TILE, GRID_W, GRID_H, DAY_SECONDS } from './constants';
 import { clamp, nowSeconds } from './utils';
-import { ensureAudio } from './audio/sfx';
+import { ensureAudio, sfx } from './audio/sfx';
 import { startMusic, stopMusic } from './audio/music';
 import { buildSprites } from './sprites';
 import { initGrid, markBuildingTiles } from './systems/grid';
@@ -63,6 +63,7 @@ import { openSnapshot } from './ui/snapshot-panel';
 import { renderObjectiveRail } from './ui/objective-rail';
 import { renderTutorialBubble, bindTutorial } from './ui/tutorial-overlay';
 import { renderChoiceOverlay, bindChoice } from './ui/choice-overlay';
+import { applyFeatureVisibility, bindFeatureVisibilityIntercept } from './systems/feature-visibility';
 // CrazyGames-launch retention extras
 import { initWheel } from './systems/wheel';
 import { initCombo } from './systems/combo';
@@ -244,6 +245,7 @@ function frame(now: number): void {
     renderTutorialBubble();
     renderChoiceOverlay();
     tickReadyTitle();
+    applyFeatureVisibility();
   }
   renderComboHud();
   requestAnimationFrame(frame);
@@ -260,6 +262,9 @@ function init(): void {
   // Wire tutorial + choice overlay buttons
   bindTutorial();
   bindChoice();
+  // Intercept clicks on locked toolbar buttons so they show a friendly
+  // "unlocks at Lv X" toast instead of opening a confusing empty panel.
+  bindFeatureVisibilityIntercept(toast, () => sfx.error());
 
   const loaded = loadGame();
   if (!loaded) {
@@ -375,6 +380,9 @@ function init(): void {
   renderOrders();
   updateHUD();
   checkAchievements();
+  // First-frame visibility pass so the player never sees a flash of all
+  // 30+ buttons before the gates kick in.
+  applyFeatureVisibility();
 
   if (!loaded) {
     // Splash overlay + cinematic camera intro for fresh sessions

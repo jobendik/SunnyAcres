@@ -4344,6 +4344,48 @@ button {
   box-shadow: 0 0 6px var(--cherry-500);
 }
 
+/* =====================================================================
+   FEATURE GATING — Sunny Acres clarity pass
+   Hide late-game systems from new players, surface near-unlocks as
+   teasers, and pulse-glow buttons that have something to claim.
+   ===================================================================== */
+.sheet-btn.gate-hidden { display: none; }
+.sheet-btn.gate-teaser {
+  filter: grayscale(0.75) brightness(0.95);
+  opacity: 0.7;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.sheet-btn.gate-teaser::after {
+  content: attr(data-lock-msg);
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff5d0;
+  padding: 1px 6px;
+  border-radius: 6px;
+  text-shadow: none;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.sheet-btn.gate-attention {
+  box-shadow: 0 0 0 2px var(--cherry-400, #ff6b6b), var(--lift-1);
+  animation: gateAttentionPulse 1.6s ease-in-out infinite;
+}
+@keyframes gateAttentionPulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--cherry-400, #ff6b6b), var(--lift-1); }
+  50%      { box-shadow: 0 0 0 4px var(--cherry-300, #ffaaa0), var(--lift-1); }
+}
+/* Same treatment for primary toolbar buttons that adopt these classes. */
+.action-bar .btn.gate-hidden { display: none; }
+.action-bar .btn.gate-teaser { opacity: 0.55; filter: grayscale(0.7); }
+.action-bar .btn.gate-attention {
+  box-shadow: 0 0 0 2px var(--cherry-400, #ff6b6b);
+}
+
 /* Production-panel: prod-bonus chip color tweak (mastery extension) */
 .prod-bonus { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 .prod-bonus-chip {

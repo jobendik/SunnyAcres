@@ -11,11 +11,16 @@ import { sprites } from '../sprites';
 import { setBgImage } from './modal';
 import { sfx } from '../audio/sfx';
 import { haptic } from '../input';
+import { applyFeatureVisibility, gateForButton, gateStatus, teaserMessageFor } from '../systems/feature-visibility';
+import { toast } from './toasts';
 
 // ---------------- MORE SHEET ----------------
 export function openMoreSheet(): void {
   const sheet = document.getElementById('more-sheet')!;
   const scrim = document.getElementById('more-scrim')!;
+  // Re-evaluate feature visibility every time the sheet opens — player
+  // could have just hit a level-up that changes the gate state.
+  applyFeatureVisibility();
   sheet.classList.add('open');
   scrim.classList.add('open');
   sheet.setAttribute('aria-hidden', 'false');
@@ -117,10 +122,19 @@ export function bindMobileShell(): void {
   if (moreBtn) moreBtn.addEventListener('click', openMoreSheet);
   if (scrim) scrim.addEventListener('click', closeMoreSheet);
 
-  // Each .sheet-btn closes the sheet then triggers the real button
+  // Each .sheet-btn closes the sheet then triggers the real button.
+  // Teaser-state buttons short-circuit to a friendly toast instead of
+  // opening a panel the player can't use yet.
   document.querySelectorAll<HTMLElement>('.sheet-btn[data-more]').forEach(b => {
     b.addEventListener('click', () => {
       const targetId = b.dataset.more!;
+      const gate = gateForButton(targetId);
+      if (gate && gateStatus(gate) === 'teaser') {
+        const msg = teaserMessageFor(targetId);
+        if (msg) toast(msg);
+        sfx.error();
+        return;
+      }
       closeMoreSheet();
       // Small delay so the sheet animation feels natural
       setTimeout(() => {

@@ -23,8 +23,13 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     done: s => s.stats.sold >= 1 },
   { id: 'orders', text: 'A neighbor needs goods — open Orders and tap "Deliver".',
     done: s => s.stats.ordersFulfilled >= 1 },
-  { id: 'build', text: 'Build a Feed Mill to turn wheat into livestock feed.',
-    done: s => s.buildings.some(b => b.type !== 'fishingdock') },
+  // Final step: pick any production building. Bakery is the friendliest
+  // starter (consumes wheat the player already has) but Feed Mill works
+  // too. Text adapts to the player's coin balance in the overlay layer.
+  { id: 'build',
+    text: 'Open Build to place your first production building (Bakery or Feed Mill).',
+    done: s => s.buildings.some(b => b.type !== 'fishingdock'),
+  },
 ];
 
 export function initTutorial(): void {
